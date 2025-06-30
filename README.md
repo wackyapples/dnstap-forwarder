@@ -1,16 +1,6 @@
 # DNSTAP Forwarder
 
-A Go application that forwards DNSTAP messages from a Unix socket to either a named pipe, Unix domain socket, rotating files, or directly to Splunk HEC in syslog format with JSON payloads.
-
-## Architecture
-
-The application is organized into logical modules:
-
-- **`config/`** - Configuration management with environment variable and command-line flag support
-- **`events/`** - DNS event structures and DNSTAP message processing
-- **`output/`** - Output writing with support for named pipes, Unix sockets, files, and Splunk HEC
-- **`service/`** - Main service logic for socket listening and connection handling
-- **`main.go`** - Application entry point
+A Go application that forwards DNSTAP messages from a Unix socket to either a named pipe, Unix domain socket, rotating files, or directly to Splunk HEC.
 
 ## Features
 
@@ -24,7 +14,6 @@ The application is organized into logical modules:
 - Direct Splunk HEC integration with retry logic and error handling
 - Automatic reconnection on output failures
 - Configurable buffer size and flush intervals
-- Graceful shutdown handling
 - Support for multiple output types (pipe/socket/file/hec)
 - Automatic file rotation with size-based triggers and cleanup
 
@@ -124,34 +113,11 @@ The application supports configurable batch processing to optimize performance:
 - **Batch Size**: Number of events to group before sending (default: 1)
 - **JSON Arrays**: When using JSON format with batch size > 1, events are sent as JSON arrays
 - **HEC Optimization**: Batches are sent as single HTTP requests to Splunk HEC
-- **Backward Compatibility**: Batch size of 1 maintains single-event behavior
 
 ## Building
 
 ```bash
 go build -o dnstap-forwarder .
-```
-
-## Example Output
-
-### Syslog Format (Default)
-```
-<22>Jan 15 10:30:45 hostname dnstap[12345]: {"timestamp":"2024-01-15T10:30:45Z","source_ip":"192.168.1.100","query_name":"example.com.","query_type":"A","response_code":"NOERROR","response_data":["example.com. 300 IN A 93.184.216.34"],"message_type":"RESPONSE","transport":"UDP","query_time":"2024-01-15T10:30:45.123456789Z","response_time":"2024-01-15T10:30:45.234567890Z","server_ip":"8.8.8.8","query_port":12345,"response_port":53,"message_size":512,"sourcetype":"dns_events","host":"dns-server-01","index":"dns_logs","source":"dnstap_forwarder"}
-```
-
-### JSON Format (Single Event)
-```json
-{"timestamp":"2024-01-15T10:30:45Z","source_ip":"192.168.1.100","query_name":"example.com.","query_type":"A","response_code":"NOERROR","response_data":["example.com. 300 IN A 93.184.216.34"],"message_type":"RESPONSE","transport":"UDP","query_time":"2024-01-15T10:30:45.123456789Z","response_time":"2024-01-15T10:30:45.234567890Z","server_ip":"8.8.8.8","query_port":12345,"response_port":53,"message_size":512,"sourcetype":"dns_events","host":"dns-server-01","index":"dns_logs","source":"dnstap_forwarder"}
-```
-
-### JSON Format (Batch)
-```json
-[{"timestamp":"2024-01-15T10:30:45Z","source_ip":"192.168.1.100","query_name":"example.com.","query_type":"A","response_code":"NOERROR","message_type":"RESPONSE","transport":"UDP","sourcetype":"dns_events","host":"dns-server-01"},{"timestamp":"2024-01-15T10:30:46Z","source_ip":"192.168.1.101","query_name":"google.com.","query_type":"AAAA","response_code":"NOERROR","message_type":"RESPONSE","transport":"UDP","sourcetype":"dns_events","host":"dns-server-01"}]
-```
-
-### Splunk HEC Format
-```json
-[{"event":{"timestamp":"2024-01-15T10:30:45Z","source_ip":"192.168.1.100","query_name":"example.com.","query_type":"A","response_code":"NOERROR","message_type":"RESPONSE","transport":"UDP"},"sourcetype":"dns_events","host":"dns-server-01","index":"dns_logs","source":"dnstap_forwarder"}]
 ```
 
 ## Integration
